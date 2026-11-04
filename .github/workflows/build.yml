@@ -18,14 +18,18 @@ jobs:
         with:
           gradle-version: 8.10.2
 
-      - name: Unzip project
-        run: unzip -o project.zip -d work
-
-      - name: Build
-        working-directory: work
-        run: gradle build --no-daemon
+      - name: Build all projects
+        run: |
+          mkdir -p out
+          for z in *.zip; do
+            n="${z%.zip}"
+            mkdir -p "work/$n"
+            unzip -o "$z" -d "work/$n"
+            (cd "work/$n" && gradle build --no-daemon)
+            cp work/$n/build/libs/*.jar out/
+          done
 
       - uses: actions/upload-artifact@v4
         with:
-          name: boatfreelook-jar
-          path: work/build/libs/*.jar
+          name: jars
+          path: out/*.jar
